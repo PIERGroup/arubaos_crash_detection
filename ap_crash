@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+
+"""
+File: ap_crash
+Author: Jeff Hagley - jhagley@piergroup.com
+Date: 2023-11-21
+Description: This code will look for AP crash files on the local file system and login to the appropriate controller to give further information on the crash
+"""
+
+import os
+from datetime import datetime, timedelta
+from aruba_query import *
+from constants import *
+import concurrent.futures
+
+# we disable the warnings if we are using IP addresses to connect to the ArubaOS Infrastructure
+requests.packages.urllib3.disable_warnings()
+
+
+def main():
+    query = ArubaQuery()
+    inventory = ArubaInventory()
+    aps_with_crashes = {}
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+
+    files = os.listdir(PATH_TO_AP_CRASH_FILES)
+
+    # get crash signatures from Aruba file if file exists, or fall back to manual crash db from 2023-10-16
+    if os.path.isfile(
+        f"{PATH_TO_AP_CRASH_FILES}/AP-crash-signature/AP-crash-signature-list.txt"
+    ):
+        with open(
+            f"{PATH_TO_AP_CRASH_FILES}/AP-crash-signature/AP-crash-signature-list.txt",
+            "r",
+        ) as crash_signature_file:
+            crash_signatures = crash_signature_file.readlines()
+            for line in crash_signatures:
+                known_crashes[line.split(";")[0][1:-1]] = line.split(";")[1].replace(
+                    "\n", ""
+                )[1:-1]
+    else:
+        known_crashes = KNOWN_CRASHES_BACKUP
+
+    # check the crash logs that have shown up on the server
+    for file in files:
+        if file.startswith("imem"):
+            ap_name = file.split(".")[1]
+            year = file.split(".")[3].split("_")[0].split("-")[0]
+            month = file.split(".")[3].split("_")[0].split("-")[1]
+            day = file.split(".")[3].split("_")[0].split("-")[2]
+            crash_date = datetime(int(year), int(month), int(day))
+
+            # we only care about aps that crashed today or yesterday
+            if (
+                crash_date.date() == today.date()
+                or crash_date.date() == yesterday.date()
+            ):
+                aps_with_crashes.setdefault(ap_name, {})
+                aps_with_crashes[ap_name] = {
+                    "version": file.split(".")[2],
+                    "date": crash_date,
+                    "controller": "",
+                }
+
+    # login to all of the gear in crashes are found
+    if len(aps_with_crashes) > 0:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for mm in ARUBA_MM:
+                executor.submit(query.get_aruba_api_token, mm, PASSWORD, inventory)
+            for md in ARUBA_MD:
+                executor.submit(query.get_aruba_api_token, md, PASSWORD, inventory)
+
+        # get the current Aruba AP DB to see what controller APs are on
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for md in ARUBA_MD:
+                executor.submit(query.get_aruba_db, md, inventory)
+
+        # for each ap with a crash, login to it's primary switch and get more information
+        for ap in aps_with_crashes:
+            if ap in inventory.aps.keys():
+                found = False
+                ap_crash_info = query.aruba_show_command(
+                    inventory.aps[ap].primary,
+                    f"show+ap+debug+crash-info+ap-name+{ap}",
+                    inventory,
+                )
+                for line in ap_crash_info["_data"]:
+                    # if the signature is in the known crash dictionary tell us
+                    for signature in known_crashes.keys():
+                        if signature in line:
+                            print(
+                                f"{ap} crashed on {aps_with_crashes[ap]['date']} and is on {inventory.aps[ap].primary} and is a known crash.  {signature} - {known_crashes[signature]}"
+                            )
+                            found = True
+                # if the signature is not in the known crash dictionary tell us
+                if not found:
+                    print(
+                        f"{ap} crashed on {aps_with_crashes[ap]['date']} and is on {inventory.aps[ap].primary} and is new crash."
+                    )
+
+
+if __name__ == "__main__":
+    main()

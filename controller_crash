@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+"""
+File: controller_crash
+Author: Jeff Hagley - jhagley@piergroup.com
+Date: 2023-11-21
+Description: This code will look for Controller or Conductors crashes and then log into the correct controller/conductor to get more information
+"""
+
+import re
+from aruba_query import *
+from constants import *
+import concurrent.futures
+
+
+requests.packages.urllib3.disable_warnings()
+
+
+def main():
+    query = ArubaQuery()
+    inventory = ArubaInventory()
+
+    # login to all of the gear
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for mm in ARUBA_MM:
+            executor.submit(query.get_aruba_api_token, mm, PASSWORD, inventory)
+        for md in ARUBA_MD:
+            executor.submit(query.get_aruba_api_token, md, PASSWORD, inventory)
+
+    # check each conductor to see if any switches connected to it has a crash
+    for mm in ARUBA_MM:
+        response = query.aruba_show_command(mm, "show+switches+debug", inventory)
+        for switch in response["All Switches"]:
+            if switch["CrashInfo"] == "yes":
+                # if a crash if found run the command on the controller with the crash for more information
+                crashinfo = query.aruba_show_command(
+                    switch["IP Address"], "show+crashinfo", inventory
+                )
+                if len(crashinfo["_data"][0].splitlines()) > 4:
+                    for line in crashinfo["_data"][0].splitlines()[4:]:
+                        date = re.split(r"\s\s+", line)[0]
+                        process = re.split(r"\s\s+", line)[1]
+                        print(
+                            f'Controller: {switch["IP Address"]}  Date: {date}  Process: {process}'
+                        )
+
+
+if __name__ == "__main__":
+    main()
