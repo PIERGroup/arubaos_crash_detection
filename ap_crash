@@ -23,6 +23,7 @@ def main():
     aps_with_crashes = {}
     today = datetime.now()
     yesterday = today - timedelta(days=1)
+    known_crashes = {}
 
     files = os.listdir(PATH_TO_AP_CRASH_FILES)
 
