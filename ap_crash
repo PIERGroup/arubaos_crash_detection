@@ -28,8 +28,14 @@ def main():
     files = os.listdir(PATH_TO_AP_CRASH_FILES)
 
     # get crash signatures from Aruba file if file exists, or fall back to manual crash db from 2023-10-16
-    if os.path.isfile(
-        f"{PATH_TO_AP_CRASH_FILES}/AP-crash-signature/AP-crash-signature-list.txt"
+    if (
+        os.path.isfile(
+            f"{PATH_TO_AP_CRASH_FILES}/AP-crash-signature/AP-crash-signature-list.txt"
+        )
+        and os.path.getsize(
+            f"{PATH_TO_AP_CRASH_FILES}/AP-crash-signature/AP-crash-signature-list.txt"
+        )
+        > 0
     ):
         with open(
             f"{PATH_TO_AP_CRASH_FILES}/AP-crash-signature/AP-crash-signature-list.txt",
