@@ -24,6 +24,7 @@ def main():
     today = datetime.now()
     yesterday = today - timedelta(days=1)
     known_crashes = {}
+    aruba_md = []
 
     files = os.listdir(PATH_TO_AP_CRASH_FILES)
 
@@ -56,7 +57,12 @@ def main():
             year = file.split(".")[3].split("_")[0].split("-")[0]
             month = file.split(".")[3].split("_")[0].split("-")[1]
             day = file.split(".")[3].split("_")[0].split("-")[2]
-            crash_date = datetime(int(year), int(month), int(day))
+            hour = file.split(".")[3].split("_")[1].split("-")[0]
+            minute = file.split(".")[3].split("_")[1].split("-")[1]
+            second = file.split(".")[3].split("_")[1].split("-")[2]
+            crash_date = datetime(
+                int(year), int(month), int(day), int(hour), int(minute), int(second)
+            )
 
             # we only care about aps that crashed today or yesterday
             if (
@@ -70,17 +76,23 @@ def main():
                     "controller": "",
                 }
 
-    # login to all of the gear in crashes are found
+    # login conductors to get list of controllers
     if len(aps_with_crashes) > 0:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for mm in ARUBA_MM:
                 executor.submit(query.get_aruba_api_token, mm, PASSWORD, inventory)
-            for md in ARUBA_MD:
-                executor.submit(query.get_aruba_api_token, md, PASSWORD, inventory)
+
+        # get the list of infrastructure from the primary conductor, and then get API tokens for the gear
+        for mm in ARUBA_MM:
+            response = query.aruba_show_command(mm, "show+switches+debug", inventory)
+            for switch in response["All Switches"]:
+                if switch["Type"] == "MD":
+                    query.get_aruba_api_token(switch["IP Address"], PASSWORD, inventory)
+                    aruba_md.append(switch["IP Address"])
 
         # get the current Aruba AP DB to see what controller APs are on
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            for md in ARUBA_MD:
+            for md in aruba_md:
                 executor.submit(query.get_aruba_db, md, inventory)
 
         # for each ap with a crash, login to it's primary switch and get more information
@@ -103,7 +115,7 @@ def main():
                 # if the signature is not in the known crash dictionary tell us
                 if not found:
                     print(
-                        f"{ap} crashed on {aps_with_crashes[ap]['date']} and is on {inventory.aps[ap].primary} and is new crash."
+                        f"{ap} crashed on {aps_with_crashes[ap]['date']} and is on {inventory.aps[ap].primary} and is new crash.  Please report to Aruba TAC."
                     )
 
 

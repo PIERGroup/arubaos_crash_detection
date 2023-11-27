@@ -1,0 +1,11 @@
+*
+!ap_crash
+!aruba_query
+!controller_crash
+!crash_email_cron.sh
+!LICENSE
+!README.md
+!requirements.txt
+!SAMPLE_AP_CRASH_SIGNATURES
+!SAMPLE_constants.py
+!.gitignore
