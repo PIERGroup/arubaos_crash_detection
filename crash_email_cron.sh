@@ -1,16 +1,21 @@
 #!/bin/bash
 
-python3 ~/arubaos_crash_detection/controller_crash > ~/arubaos_crash_detection/controller_crash_output
-python3 ~/arubaos_/crash_detection/ap_crash > ~/arubaos_crash_detection/ap_crash_output
-
+# Set this to be the path to the arubaos_crash_detection folder
+PATH_TO_ARUBAOS_CRASH_DETECTION="/path/to/arubaos_crash_detection"
 EMAIL="test@email.com"
 
-if [ -s ~/arubaos_crash_detection/controller_crash_output ]; then
+python3 "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/controller_crash > "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/controller_crash_output
+python3 "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/ap_crash > "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/ap_crash_output
+
+
+if [ -s "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/controller_crash_output ]; then
         # The file is not-empty.
-        cat ~/arubaos_crash_detection/controller_crash_output | mail -s "Aruba Controller Crash" ${EMAIL}
+        cat "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/controller_crash_output | mail -s "Aruba Controller Crash" ${EMAIL}
+        rm "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/controller_crash_output
 fi
 
-if [ -s ~/arubaos_crash_detection/ap_crash_output ]; then
+if [ -s "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/ap_crash_output ]; then
         # The file is not-empty.
-        cat ~/arubaos_crash_detection/ap_crash_output | mail -s "Aruba AP Crash" ${EMAIL}
+        cat "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/ap_crash_output | mail -s "Aruba AP Crash" ${EMAIL}
+        rm "{$PATH_TO_ARUBAOS_CRASH_DETECTION}"/ap_crash_output
 fi
