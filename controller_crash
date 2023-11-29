@@ -8,11 +8,11 @@ Description: This code will look for Controller or Conductors crashes and then l
 """
 
 import re
+import concurrent.futures
 from aruba_query import *
 from constants import *
-import concurrent.futures
 
-
+# we disable the warnings if we are using IP addresses to connect to the ArubaOS Infrastructure
 requests.packages.urllib3.disable_warnings()
 
 
