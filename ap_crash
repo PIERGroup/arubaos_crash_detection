@@ -3,7 +3,7 @@
 """
 File: ap_crash
 Author: Jeff Hagley - jhagley@piergroup.com
-Date: 2023-11-21
+Date: 2024-02-13
 Description: This code will look for AP crash files on the local file system and login to the appropriate controller to give further information on the crash
 """
 
@@ -21,10 +21,11 @@ def main():
     query = ArubaQuery()
     inventory = ArubaInventory()
     aps_with_crashes = {}
+    aps_with_process_crashes = {}
     today = datetime.now()
     yesterday = today - timedelta(days=1)
     known_crashes = {}
-    aruba_md = []
+    aruba_md = {}
 
     files = os.listdir(PATH_TO_AP_CRASH_FILES)
 
@@ -52,18 +53,17 @@ def main():
 
     # check the crash logs that have shown up on the server
     for file in files:
-        if file.startswith("imem"):
+        if file.startswith("panic-dump"):
             ap_name = file.split(".")[1]
-            year = file.split(".")[3].split("_")[0].split("-")[0]
-            month = file.split(".")[3].split("_")[0].split("-")[1]
-            day = file.split(".")[3].split("_")[0].split("-")[2]
-            hour = file.split(".")[3].split("_")[1].split("-")[0]
-            minute = file.split(".")[3].split("_")[1].split("-")[1]
-            second = file.split(".")[3].split("_")[1].split("-")[2]
+            year = file.split(".")[2].split("-")[0]
+            month = file.split(".")[2].split("-")[1]
+            day = file.split(".")[2].split("-")[2].split("_")[0]
+            hour = file.split(".")[2].split("-")[2].split("_")[1]
+            minute = file.split(".")[2].split("-")[3]
+            second = file.split(".")[2].split("-")[4]
             crash_date = datetime(
                 int(year), int(month), int(day), int(hour), int(minute), int(second)
             )
-
             # we only care about aps that crashed today or yesterday
             if (
                 crash_date.date() == today.date()
@@ -71,9 +71,36 @@ def main():
             ):
                 aps_with_crashes.setdefault(ap_name, {})
                 aps_with_crashes[ap_name] = {
-                    "version": file.split(".")[2],
+                    "version": "",
                     "date": crash_date,
                     "controller": "",
+                    "crash_file": file,
+                }
+        elif file.startswith("core."):
+            ap_name = file.split(".")[2]
+            process = file.split(".")[1]
+            epoch_time = os.path.getmtime(f"{PATH_TO_AP_CRASH_FILES}/{file}")
+            datetime_file = datetime.fromtimestamp(epoch_time)
+            year = datetime_file.year
+            month = datetime_file.month
+            day = datetime_file.day
+            hour = datetime_file.hour
+            minute = datetime_file.minute
+            second = datetime_file.second
+            crash_date = datetime(
+                int(year), int(month), int(day), int(hour), int(minute), int(second)
+            )
+            if (
+                crash_date.date() == today.date()
+                or crash_date.date() == yesterday.date()
+            ):
+                aps_with_process_crashes.setdefault(ap_name, {})
+                aps_with_process_crashes[ap_name] = {
+                    "version": "",
+                    "date": crash_date,
+                    "controller": "",
+                    "process": process,
+                    "crash_file": file,
                 }
 
     # login conductors to get list of controllers
@@ -88,7 +115,7 @@ def main():
             for switch in response["All Switches"]:
                 if switch["Type"] == "MD":
                     query.get_aruba_api_token(switch["IP Address"], PASSWORD, inventory)
-                    aruba_md.append(switch["IP Address"])
+                    aruba_md.setdefault(switch["IP Address"], switch["Version"])
 
         # get the current Aruba AP DB to see what controller APs are on
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -104,19 +131,40 @@ def main():
                     f"show+ap+debug+crash-info+ap-name+{ap}",
                     inventory,
                 )
+                ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
+                    inventory.aps[ap].primary, PASSWORD, ap
+                )
                 for line in ap_crash_info["_data"]:
                     # if the signature is in the known crash dictionary tell us
                     for signature in known_crashes.keys():
                         if signature in line:
                             print(
-                                f"{ap} crashed on {aps_with_crashes[ap]['date']} and is on {inventory.aps[ap].primary} and is a known crash.  {signature} - {known_crashes[signature]}"
+                                f"""AP name: {ap}   AP type: {inventory.aps[ap].model}   AP SN#: {inventory.aps[ap].serial}   AOS Version: {aruba_md[inventory.aps[ap].primary]}
+AP AAC IP: {inventory.aps[ap].primary}   AP Crash Time: {aps_with_crashes[ap]['date']}
+AP core-dump filename: {aps_with_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
+This is a known crash. {signature} - {known_crashes[signature]}\n"""
                             )
                             found = True
                 # if the signature is not in the known crash dictionary tell us
                 if not found:
                     print(
-                        f"{ap} crashed on {aps_with_crashes[ap]['date']} and is on {inventory.aps[ap].primary} and is new crash.  Please report to Aruba TAC."
+                        f"""AP name: {ap}   AP type: {inventory.aps[ap].model}   AP SN#: {inventory.aps[ap].serial}   AOS Version: {aruba_md[inventory.aps[ap].primary]}
+AP AAC IP: {inventory.aps[ap].primary}   AP Crash Time: {aps_with_crashes[ap]['date']}
+AP core-dump filename: {aps_with_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
+This is a new crash. Please report to Aruba TAC.\n"""
                     )
+        for ap in aps_with_process_crashes:
+            if ap in inventory.aps.keys():
+                ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
+                    inventory.aps[ap].primary, PASSWORD, ap
+                )
+
+                print(
+                    f"""AP name: {ap}   AP type: {inventory.aps[ap].model}   AP SN#: {inventory.aps[ap].serial}   AOS Version: {aruba_md[inventory.aps[ap].primary]}
+AP AAC IP: {inventory.aps[ap].primary}   AP Crashed Process: {aps_with_process_crashes[ap]['process']}   AP Process Crash Time: {aps_with_process_crashes[ap]['date']}
+AP core-dump filename: {aps_with_process_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
+Please report to Aruba TAC.\n"""
+                )
 
 
 if __name__ == "__main__":

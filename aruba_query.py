@@ -9,6 +9,7 @@ Description: This is a class for handling ArubaOS8 RestAPI queries
 
 import requests
 from dataclasses import dataclass, field
+from netmiko import ConnectHandler
 from constants import *
 
 
@@ -103,3 +104,27 @@ class ArubaQuery:
                         status=ap["Status"],
                         group=ap["Group"],
                     )
+
+    def aruba_show_ap_crash_info_reboot_reason(self, mc, password, ap):
+        conn = {
+            "device_type": "aruba_os_ssh",
+            "host": mc,
+            "username": USERNAME,
+            "password": password,
+            "banner_timeout": 10,
+        }
+
+        ch = ConnectHandler(**conn)
+        command = f"show ap debug system-status ap-name {ap}"
+        crash_info = ch.send_command_timing(
+            command, strip_command=False, strip_prompt=False
+        )
+        reboot_information = False
+        for line in crash_info.splitlines():
+            if line.startswith(("Reboot Information")):
+                reboot_information = True
+            elif not line.startswith("-") and reboot_information:
+                ch.disconnect()
+                return line
+        ch.disconnect()
+        return None
