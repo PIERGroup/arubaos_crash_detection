@@ -1,16 +1,16 @@
 # arubaos_crash_detection
 
-This tool is meant to be ran on the machine in which you are sending your Aruba AP Crash logs too.  It will search the directory for new AP crashes, log into the controllers for more details, and then search the logs for known signatures.  If a known signature is found it will report it, and if it is not found then will notify so more work can be done with Aruba TAC.
+This tool is meant to be ran on the machine in which you are sending your Aruba AP Crash logs too.  It will search the directory for new AP firmware crashes or AP process crashes, log into the controllers for more details, and then search the logs for known signatures.  If a known signature is found it will report it, and if it is not found then will notify so more work can be done with Aruba TAC.
 
-This will work on 500 and 600 series APs only and for firmware only crashes.  Legacy APs don't generate the crash files used by this script.  This works for Mobility Conductor (MCR)-Managed Device (MD) structure only.
+This will work on 500 and 600 series APs only and for firmware or process crashes.  Legacy APs don't generate the crash files used by this script.  This works for Mobility Conductor (MCR)-Managed Device (MD) structure only, and has been tested on 8.10.0.8 and above code.
 
 You will need to setup scp offloading of crash files to a SCP server
 
-SAMPLE_AP_CRASH_SIGNATURES was last updated on 11-22-2023
+SAMPLE_AP_CRASH_SIGNATURES was last updated on 02-09-2024
 
 ## Setup
 
-Run this first to install the required python modules for your user
+Run this first to install the required python modules for your user, note Netmiko requires at least Python 3.7 (RHEL 7/Centos 7 and below have Python 3.6 as native Python by default)
 
 `pip3 install -r requirements.txt --upgrade --user`
 
