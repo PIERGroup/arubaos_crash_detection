@@ -126,33 +126,36 @@ def main():
         for ap in aps_with_crashes:
             if ap in inventory.aps.keys():
                 found = False
-                ap_crash_info = query.aruba_show_command(
-                    inventory.aps[ap].primary,
-                    f"show+ap+debug+crash-info+ap-name+{ap}",
-                    inventory,
-                )
-                ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
-                    inventory.aps[ap].primary, PASSWORD, ap
-                )
-                for line in ap_crash_info["_data"]:
-                    # if the signature is in the known crash dictionary tell us
-                    for signature in known_crashes.keys():
-                        if signature in line:
-                            print(
-                                f"""AP name: {ap}   AP type: {inventory.aps[ap].model}   AP SN#: {inventory.aps[ap].serial}   AOS Version: {aruba_md[inventory.aps[ap].primary]}
-AP AAC IP: {inventory.aps[ap].primary}   AP Crash Time: {aps_with_crashes[ap]['date']}
-AP core-dump filename: {aps_with_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
-This is a known crash. {signature} - {known_crashes[signature]}\n"""
-                            )
-                            found = True
-                # if the signature is not in the known crash dictionary tell us
-                if not found:
-                    print(
-                        f"""AP name: {ap}   AP type: {inventory.aps[ap].model}   AP SN#: {inventory.aps[ap].serial}   AOS Version: {aruba_md[inventory.aps[ap].primary]}
-AP AAC IP: {inventory.aps[ap].primary}   AP Crash Time: {aps_with_crashes[ap]['date']}
-AP core-dump filename: {aps_with_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
-This is a new crash. Please report to Aruba TAC.\n"""
+                with open(f"{PATH_TO_AP_CRASH_FILES}/{aps_with_crashes[ap]['crash_file']}","r") as ap_crash_file:
+                    ap_crash_info = ap_crash_file.readlines()
+
+                    ap_crash_info = query.aruba_show_command(
+                        inventory.aps[ap].primary,
+                        f"show+ap+debug+crash-info+ap-name+{ap}",
+                        inventory,
                     )
+                    ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
+                        inventory.aps[ap].primary, PASSWORD, ap
+                    )
+                    for line in ap_crash_info:
+                        # if the signature is in the known crash dictionary tell us
+                        for signature in known_crashes.keys():
+                            if signature in line:
+                                print(
+                                    f"""AP name: {ap}   AP type: {inventory.aps[ap].model}   AP SN#: {inventory.aps[ap].serial}   AOS Version: {aruba_md[inventory.aps[ap].primary]}
+    AP AAC IP: {inventory.aps[ap].primary}   AP Crash Time: {aps_with_crashes[ap]['date']}
+    AP core-dump filename: {aps_with_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
+    This is a known crash. {signature} - {known_crashes[signature]}\n"""
+                                )
+                                found = True
+                    # if the signature is not in the known crash dictionary tell us
+                    if not found:
+                        print(
+                            f"""AP name: {ap}   AP type: {inventory.aps[ap].model}   AP SN#: {inventory.aps[ap].serial}   AOS Version: {aruba_md[inventory.aps[ap].primary]}
+    AP AAC IP: {inventory.aps[ap].primary}   AP Crash Time: {aps_with_crashes[ap]['date']}
+    AP core-dump filename: {aps_with_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
+    This is a new crash. Please report to Aruba TAC.\n"""
+                        )
         for ap in aps_with_process_crashes:
             if ap in inventory.aps.keys():
                 ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
@@ -169,3 +172,5 @@ Please report to Aruba TAC.\n"""
 
 if __name__ == "__main__":
     main()
+
+
