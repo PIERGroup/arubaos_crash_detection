@@ -3,7 +3,7 @@
 """
 File: ap_crash
 Author: Jeff Hagley - jhagley@piergroup.com
-Date: 2024-02-13
+Date: 2024-03-14
 Description: This code will look for AP crash files on the local file system and login to the appropriate controller to give further information on the crash
 """
 
@@ -126,6 +126,7 @@ def main():
         for ap in aps_with_crashes:
             if ap in inventory.aps.keys():
                 found = False
+                # we look at the crash file instead of via API because there is inconsistent output format from the API depending on AP model
                 with open(f"{PATH_TO_AP_CRASH_FILES}/{aps_with_crashes[ap]['crash_file']}","r") as ap_crash_file:
                     ap_crash_info = ap_crash_file.readlines()
                     
