@@ -69,7 +69,7 @@ def main():
                 crash_date.date() == today.date()
                 or crash_date.date() == yesterday.date()
             ):
-                aps_with_crashes.setdefault(ap_name, {})
+                aps_with_crashes.setdefault(file, {})
                 aps_with_crashes[file] = {
                     "version": "",
                     "date": crash_date,
@@ -95,7 +95,7 @@ def main():
                 crash_date.date() == today.date()
                 or crash_date.date() == yesterday.date()
             ):
-                aps_with_process_crashes.setdefault(ap_name, {})
+                aps_with_process_crashes.setdefault(file, {})
                 aps_with_process_crashes[file] = {
                     "version": "",
                     "date": crash_date,
