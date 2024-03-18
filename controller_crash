@@ -40,7 +40,7 @@ def main():
                         date = re.split(r"\s\s+", line)[0]
                         process = re.split(r"\s\s+", line)[1]
                         print(
-                            f'{switch["Name"]}: {switch["IP Address"]}  AOS: {switch["Version"]} Crash Time: {date}  Process Name: {process}'
+                            f'{switch["Name"]}: {switch["IP Address"]}   AOS: {switch["Version"]}   Crash Time: {date}   Process Name: {process}'
                         )
 
 
