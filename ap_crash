@@ -24,10 +24,12 @@ def main():
     aps_with_process_crashes = {}
     now = datetime.now()
     if AP_CRASH_CHECK_TIME > 24:
-        AP_CRASH_CHECK_TIME = 24
+        ap_crash_check_time = 24
     elif AP_CRASH_CHECK_TIME < 1:
-        AP_CRASH_CHECK_TIME = 1
-    prev_time = now - timedelta(hours=AP_CRASH_CHECK_TIME)
+        ap_crash_check_time = 1
+    else:
+        ap_crash_check_time = AP_CRASH_CHECK_TIME
+    prev_time = now - timedelta(hours=ap_crash_check_time)
     known_crashes = {}
     aruba_md = {}
 
@@ -122,8 +124,8 @@ def main():
 
         # get the current Aruba AP DB to see what controller APs are on
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            for md in aruba_md:
-                executor.submit(query.get_aruba_db, md, inventory)
+            for mm in ARUBA_MM:
+                executor.submit(query.get_aruba_db, mm, inventory)
 
         # for each ap with a crash, login to it's primary switch and get more information
         for ap in aps_with_crashes:

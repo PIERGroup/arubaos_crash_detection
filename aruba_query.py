@@ -90,20 +90,19 @@ class ArubaQuery:
         response = self.aruba_show_command(wc, command, inventory)
         # parse json response and update the class
         for ap in response["AP Database"]:
-            if ap["Switch IP"] == wc:
-                if ap["Status"].startswith("Up"):
-                    inventory.aps[ap["Name"]] = ArubaAP(
-                        name=ap["Name"],
-                        mac=ap["Wired MAC Address"],
-                        ip=ap["IP Address"],
-                        flags=ap["Flags"],
-                        model=ap["AP Type"],
-                        serial=ap["Serial #"],
-                        primary=ap["Switch IP"],
-                        secondary=ap["Standby IP"],
-                        status=ap["Status"],
-                        group=ap["Group"],
-                    )
+            if ap["Status"].startswith("Up"):
+                inventory.aps[ap["Name"]] = ArubaAP(
+                    name=ap["Name"],
+                    mac=ap["Wired MAC Address"],
+                    ip=ap["IP Address"],
+                    flags=ap["Flags"],
+                    model=ap["AP Type"],
+                    serial=ap["Serial #"],
+                    primary=ap["Switch IP"],
+                    secondary=ap["Standby IP"],
+                    status=ap["Status"],
+                    group=ap["Group"],
+                )
 
     def aruba_show_ap_crash_info_reboot_reason(self, mc, password, ap):
         conn = {
