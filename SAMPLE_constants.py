@@ -3,7 +3,7 @@
 """
 File: constants.py
 Author: Jeff Hagley - jhagley@piergroup.com
-Date: 2023-11-21
+Date: 2024-03-18
 Description: Standard variables to use in the scripts in this directory
 """
 
@@ -14,6 +14,9 @@ PATH_TO_AP_CRASH_FILES = "/path/to/ap/crash/files"
 
 # this is the list of aruba conductors, only list the primary conductor(s)
 ARUBA_MM = ["192.168.0.5", "192.168.0.15", "192.168.0.25"]
+
+#this is the time in hours to check for crashes
+AP_CRASH_CHECK_TIME = 24
 
 KNOWN_CRASHES_BACKUP = {
 "ar_wal_tx_seq.c:4047":"AOS-246729",
