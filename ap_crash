@@ -22,8 +22,12 @@ def main():
     inventory = ArubaInventory()
     aps_with_crashes = {}
     aps_with_process_crashes = {}
-    today = datetime.now()
-    yesterday = today - timedelta(hours=AP_CRASH_CHECK_TIME)
+    now = datetime.now()
+    if AP_CRASH_CHECK_TIME > 24:
+        AP_CRASH_CHECK_TIME = 24
+    elif AP_CRASH_CHECK_TIME < 1:
+        AP_CRASH_CHECK_TIME = 1
+    prev_time = now - timedelta(hours=AP_CRASH_CHECK_TIME)
     known_crashes = {}
     aruba_md = {}
 
@@ -66,8 +70,7 @@ def main():
             )
             # we only care about aps that crashed today or yesterday
             if (
-                crash_date.date() == today.date()
-                or crash_date.date() == yesterday.date()
+                prev_time < crash_date < now
             ):
                 aps_with_crashes.setdefault(file, {})
                 aps_with_crashes[file] = {
@@ -92,8 +95,7 @@ def main():
                 int(year), int(month), int(day), int(hour), int(minute), int(second)
             )
             if (
-                crash_date.date() == today.date()
-                or crash_date.date() == yesterday.date()
+                prev_time < crash_date < now
             ):
                 aps_with_process_crashes.setdefault(file, {})
                 aps_with_process_crashes[file] = {
@@ -116,7 +118,6 @@ def main():
             response = query.aruba_show_command(mm, "show+switches+debug", inventory)
             for switch in response["All Switches"]:
                 if switch["Type"] == "MD":
-                    query.get_aruba_api_token(switch["IP Address"], PASSWORD, inventory)
                     aruba_md.setdefault(switch["IP Address"], switch["Version"])
 
         # get the current Aruba AP DB to see what controller APs are on
@@ -133,7 +134,7 @@ def main():
                     ap_crash_info = ap_crash_file.readlines()
                     
                     ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
-                        inventory.aps[aps_with_crashes[ap]["ap_name"]].primary, PASSWORD, ap
+                        inventory.aps[aps_with_crashes[ap]["ap_name"]].primary, PASSWORD, aps_with_crashes[ap]["ap_name"]
                     )
                     for line in ap_crash_info:
                         # if the signature is in the known crash dictionary tell us
@@ -157,7 +158,7 @@ def main():
         for ap in aps_with_process_crashes:
             if aps_with_crashes[ap]["ap_name"] in inventory.aps.keys():
                 ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
-                    inventory.aps[aps_with_crashes[ap]["ap_name"]].primary, PASSWORD, ap
+                    inventory.aps[aps_with_crashes[ap]["ap_name"]].primary, PASSWORD, aps_with_crashes[ap]["ap_name"]
                 )
 
                 print(
