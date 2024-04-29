@@ -110,7 +110,7 @@ def main():
                 }
 
     # login conductors to get list of controllers
-    if len(aps_with_crashes) > 0:
+    if len(aps_with_crashes) > 0 or len(aps_with_process_crashes) > 0:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for mm in ARUBA_MM:
                 executor.submit(query.get_aruba_api_token, mm, PASSWORD, inventory)
@@ -158,14 +158,14 @@ def main():
     This is a new crash. Please report to Aruba TAC.\n"""
                         )
         for ap in aps_with_process_crashes:
-            if aps_with_crashes[ap]["ap_name"] in inventory.aps.keys():
+            if aps_with_process_crashes[ap]["ap_name"] in inventory.aps.keys():
                 ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(
-                    inventory.aps[aps_with_crashes[ap]["ap_name"]].primary, PASSWORD, aps_with_crashes[ap]["ap_name"]
+                    inventory.aps[aps_with_process_crashes[ap]["ap_name"]].primary, PASSWORD, aps_with_process_crashes[ap]["ap_name"]
                 )
 
                 print(
-                    f"""AP name: {aps_with_crashes[ap]["ap_name"]}   AP type: {inventory.aps[aps_with_crashes[ap]["ap_name"]].model}   AP SN#: {inventory.aps[aps_with_crashes[ap]["ap_name"]].serial}   AOS Version: {aruba_md[inventory.aps[aps_with_crashes[ap]["ap_name"]].primary]}
-    AP AAC IP: {inventory.aps[aps_with_crashes[ap]["ap_name"]].primary}   AP Crashed Process: {aps_with_process_crashes[ap]['process']}   AP Process Crash Time: {aps_with_process_crashes[ap]['date']}
+                    f"""AP name: {aps_with_process_crashes[ap]["ap_name"]}   AP type: {inventory.aps[aps_with_process_crashes[ap]["ap_name"]].model}   AP SN#: {inventory.aps[aps_with_process_crashes[ap]["ap_name"]].serial}   AOS Version: {aruba_md[inventory.aps[aps_with_crashes[ap]["ap_name"]].primary]}
+    AP AAC IP: {inventory.aps[aps_with_process_crashes[ap]["ap_name"]].primary}   AP Crashed Process: {aps_with_process_crashes[ap]['process']}   AP Process Crash Time: {aps_with_process_crashes[ap]['date']}
     AP core-dump filename: {aps_with_process_crashes[ap]['crash_file']}   AP Reboot Information: {ap_reboot_reason.replace("AP Reboot reason: ", "")}
     Please report to Aruba TAC.\n"""
                 )
