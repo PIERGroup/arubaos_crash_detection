@@ -9,3 +9,5 @@
 !SAMPLE_AP_CRASH_SIGNATURES
 !SAMPLE_constants.py
 !.gitignore
+!controller_crash_email_cron.sh
+!ap_crash_email_cron.sh
