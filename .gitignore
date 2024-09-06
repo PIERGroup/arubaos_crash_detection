@@ -11,3 +11,5 @@
 !.gitignore
 !controller_crash_email_cron.sh
 !ap_crash_email_cron.sh
+!controller_command_list
+!controller_commands.py

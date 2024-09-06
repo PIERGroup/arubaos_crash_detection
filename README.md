@@ -33,6 +33,23 @@ This tool will look for controller crashes and report on them
 ### crash_email_cron.sh
 This is a sample cron job that can be used to email out the results of the tool
 
+### controller_commands.py
+This will run the commands listed in controller_command_list 
+Format for the controller_command_list is 
+
+column delimeter is ;
+1st field: MM, MD, or MM/MD - run on the MM, MD, or Both
+2nd field: command to run
+3rd field: Can be blank or only display if "col:column (space delimeted) number,math compare:number to compare to"
+math compares for 3rd field: gt, lt, gte, lte, equal, notequal
+
+Examples:
+MM/MD;show process monitor statistics | include mswitch | exclude PROCESS_RUNNING;""
+MD;show datapath utilization | include SPGW,SP,FPGW,DPI,FP | exclude Path;"col:9,gte:70"
+MD;show cpuload | include idle;"col:6,lte:25"
+MD;show datapath bwm type 0 | include "0     ";"col:5,gte:9000"
+
+
 
 Contributor from Aruba ERT - David Nie, david.nie@hpe.com
 Please submit a GitHub issue with any feedback

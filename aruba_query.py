@@ -11,6 +11,7 @@ import requests
 from dataclasses import dataclass, field
 from netmiko import ConnectHandler
 from constants import *
+import re
 
 
 # This is a class to store the ap data from the controllers.  This makes it easier to add more data later as we are asked for more data
@@ -127,3 +128,60 @@ class ArubaQuery:
                 return line
         ch.disconnect()
         return None
+    
+
+    def remove_non_numeric(self, string):
+        return re.sub(r'\D', '', string)
+    
+    def aruba_ssh_command(self, mc, commands):
+        conn = {
+            "device_type": "aruba_os_ssh",
+            "host": mc,
+            "username": USERNAME,
+            "password": PASSWORD,
+            "banner_timeout": 10,
+        }
+
+        # Run each command in the list and return the results
+        ch = ConnectHandler(**conn)
+        results = ""
+        for command in commands:
+            temp_output = ch.send_command_timing(command["command_name"], strip_prompt=True, strip_command=False)
+            if command["column"] != "":
+                try:
+                    temp_result = temp_output.splitlines()
+                    column = int(command["column"])-1
+                    for line in temp_result:
+                        if line == command["command_name"]:
+                            results += line
+                            results += "\n"
+                        elif command["math_compare"] == "gt":
+                            if int(self.remove_non_numeric(line.split()[column])) > int(command["integer"]):
+                                results += line
+                                results += "\n"
+                        elif command["math_compare"] == "lt":
+                            if int(self.remove_non_numeric(line.split()[column])) < int(command["integer"]):
+                                results += line
+                                results += "\n"
+                        elif command["math_compare"] == "eq":
+                            if int(self.remove_non_numeric(line.split()[column])) == int(command["integer"]):
+                                results += line
+                                results += "\n"
+                        elif command["math_compare"] == "gte":
+                            if int(self.remove_non_numeric(line.split()[column])) >= int(command["integer"]):
+                                results += line
+                                results += "\n"
+                        elif command["math_compare"] == "lte":
+                            if int(self.remove_non_numeric(line.split()[column])) <= int(command["integer"]):
+                                results += line
+                                results += "\n"
+                except Exception as e:
+                    results += "\n" + f"Error processing command {command['command_name']}"
+                    results += "\n" + f"Error: Column {column} - {e}"
+                    results += "\n"
+            else:
+                results += "\n" + temp_output
+                results += "\n"
+
+        ch.disconnect()
+        return results
