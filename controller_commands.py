@@ -13,7 +13,8 @@ requests.packages.urllib3.disable_warnings()
 def main():
     inventory = ArubaInventory()
     query = ArubaQuery()
-    aruba_md = []
+    aruba_md = {}
+    aruba_mm = {}
     aruba_mm_commands = []
     aruba_md_commands = []
 
@@ -26,7 +27,11 @@ def main():
         response = query.aruba_show_command(mm, "show+switches+debug", inventory)
         for switch in response["All Switches"]:
             if switch["Type"] == "MD":
-                aruba_md.append(switch["IP Address"])
+                aruba_md.update({switch["IP Address"]: switch["Name"]})
+            elif switch["Type"] == "standby":
+                aruba_mm.update({switch["IP Address"]: switch["Name"]})
+            elif switch["Type"] == "conductor":
+                aruba_mm.update({switch["IP Address"]: switch["Name"]})
 
     with concurrent.futures.ThreadPoolExecutor() as executor:    
         for md in aruba_md:
@@ -54,16 +59,18 @@ def main():
                 aruba_mm_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
 
     results = ""
-    for mm in ARUBA_MM:
-        results += mm + "\n"
-        results += query.aruba_ssh_command(mm, aruba_mm_commands)
+    for mm in aruba_mm:
+        temp_results = query.aruba_ssh_command(mm, aruba_mm_commands)
+        results += aruba_mm[mm] + "\n"
+        results += temp_results
         results += "\n"
     
     for md in aruba_md:
-        results += md + "\n"
-        results += query.aruba_ssh_command(md, aruba_md_commands)
+        temp_results = query.aruba_ssh_command(md, aruba_md_commands)
+        results += aruba_md[md] + "\n"
+        results += temp_results
         results += "\n"
-
+        
     print(results)
 
     

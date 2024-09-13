@@ -147,7 +147,7 @@ class ArubaQuery:
         ch = ConnectHandler(**conn)
         results = ""
         for command in commands:
-            temp_output = ch.send_command_timing(command["command_name"], strip_prompt=True, strip_command=False)
+            temp_output = ch.send_command_timing(command["command_name"], strip_prompt=True, strip_command=True)
             if command["column"] != "":
                 try:
                     temp_result = temp_output.splitlines()
@@ -181,7 +181,11 @@ class ArubaQuery:
                     results += "\n" + f"Error: Column {str(int(column)+1)} - {e}"
                     results += "\n"
             else:
-                results += "\n" + temp_output
+                results += "\n"
+                temp_results = ""
+                for line in temp_output.splitlines():
+                    temp_results += line
+                results += temp_results
                 results += "\n"
 
         ch.disconnect()

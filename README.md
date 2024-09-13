@@ -51,5 +51,5 @@ MD;show datapath bwm type 0 | include "0     ";"col:5,gte:9000"
 
 
 
-Contributor from Aruba ERT - David Nie, david.nie@hpe.com
+Contributor from Aruba PSE - David Nie, david.nie@hpe.com
 Please submit a GitHub issue with any feedback
