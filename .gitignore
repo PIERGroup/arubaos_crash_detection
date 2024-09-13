@@ -13,3 +13,4 @@
 !ap_crash_email_cron.sh
 !controller_command_list
 !controller_commands.py
+!controller_commands_email_cron.sh
