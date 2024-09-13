@@ -131,7 +131,8 @@ class ArubaQuery:
     
 
     def remove_non_numeric(self, string):
-        return re.sub(r'\D', '', string)
+        return string.replace(",", "").replace("%","")
+        # return re.sub(r'\D', '', string)
     
     def aruba_ssh_command(self, mc, commands):
         conn = {
@@ -156,28 +157,28 @@ class ArubaQuery:
                             results += line
                             results += "\n"
                         elif command["math_compare"] == "gt":
-                            if int(self.remove_non_numeric(line.split()[column])) > int(command["integer"]):
+                            if float(self.remove_non_numeric(line.split()[column])) > float(command["integer"]):
                                 results += line
                                 results += "\n"
                         elif command["math_compare"] == "lt":
-                            if int(self.remove_non_numeric(line.split()[column])) < int(command["integer"]):
+                            if float(self.remove_non_numeric(line.split()[column])) < float(command["integer"]):
                                 results += line
                                 results += "\n"
                         elif command["math_compare"] == "eq":
-                            if int(self.remove_non_numeric(line.split()[column])) == int(command["integer"]):
+                            if float(self.remove_non_numeric(line.split()[column])) == float(command["integer"]):
                                 results += line
                                 results += "\n"
                         elif command["math_compare"] == "gte":
-                            if int(self.remove_non_numeric(line.split()[column])) >= int(command["integer"]):
+                            if float(self.remove_non_numeric(line.split()[column])) >= float(command["integer"]):
                                 results += line
                                 results += "\n"
                         elif command["math_compare"] == "lte":
-                            if int(self.remove_non_numeric(line.split()[column])) <= int(command["integer"]):
+                            if float(self.remove_non_numeric(line.split()[column])) <= float(command["integer"]):
                                 results += line
                                 results += "\n"
                 except Exception as e:
                     results += "\n" + f"Error processing command {command['command_name']}"
-                    results += "\n" + f"Error: Column {column} - {e}"
+                    results += "\n" + f"Error: Column {str(int(column)+1)} - {e}"
                     results += "\n"
             else:
                 results += "\n" + temp_output
