@@ -33,9 +33,9 @@ def main():
             elif switch["Type"] == "conductor":
                 aruba_mm.update({switch["IP Address"]: switch["Name"]})
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:    
-        for md in aruba_md:
-            executor.submit(query.get_aruba_api_token, md, PASSWORD, inventory)
+    # with concurrent.futures.ThreadPoolExecutor() as executor:    
+    #     for md in aruba_md:
+    #         executor.submit(query.get_aruba_api_token, md, PASSWORD, inventory)
 
     # get the list of commands from controller_command_list
     with open("controller_command_list", "r") as f:
