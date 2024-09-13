@@ -4,7 +4,7 @@
 PATH_TO_ARUBAOS_CRASH_DETECTION="/path/to/arubaos_crash_detection"
 EMAIL="test@email.com"
 
-python3 ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands.py > ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands_output
+python3 ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands > ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands_output
 
 
 if [ -s ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands_output ]; then
