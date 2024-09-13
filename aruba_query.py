@@ -156,7 +156,7 @@ class ArubaQuery:
                     results += command["command_name"]
                     results += "\n"
                     for line in temp_result:
-                        if line.startswith("#"):
+                        if line.startswith("#") or line == command["command_name"]:
                             pass
                         elif command["math_compare"] == "gt":
                             if float(self.remove_non_numeric(line.split()[column])) > float(command["integer"]):
