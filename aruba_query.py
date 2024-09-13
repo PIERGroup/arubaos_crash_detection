@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from netmiko import ConnectHandler
 from constants import *
 import re
+import time
 
 
 # This is a class to store the ap data from the controllers.  This makes it easier to add more data later as we are asked for more data
@@ -198,6 +199,7 @@ class ArubaQuery:
                         results += line
                         results += "\n"
             results += "\n"
+            time.sleep(1)
 
         ch.disconnect()
         return results

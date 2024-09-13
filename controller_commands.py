@@ -41,22 +41,25 @@ def main():
     with open("controller_command_list", "r") as f:
         lines = f.readlines()
         for line in lines:
-            line_split = line.strip().split(";")
-            if line_split[2] != "" and line_split[2] != "\n":
-                column = line_split[2].split(",")[0].split(":")[1]
-                math_compare = line_split[2].split(",")[1].split(":")[0]
-                integer = line_split[2].split(",")[1].split(":")[1]
+            if line.startswith("#"):
+                pass
             else:
-                column = ""
-                math_compare = ""
-                integer = ""
-            if line_split[0].upper() == "MM":
-                aruba_mm_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
-            elif line_split[0].upper() == "MD":
-                aruba_md_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
-            elif "MM" and "MD" in line_split[0].upper():
-                aruba_md_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
-                aruba_mm_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
+                line_split = line.strip().split(";")
+                if line_split[2] != "" and line_split[2] != "\n":
+                    column = line_split[2].split(",")[0].split(":")[1]
+                    math_compare = line_split[2].split(",")[1].split(":")[0]
+                    integer = line_split[2].split(",")[1].split(":")[1]
+                else:
+                    column = ""
+                    math_compare = ""
+                    integer = ""
+                if line_split[0].upper() == "MM":
+                    aruba_mm_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
+                elif line_split[0].upper() == "MD":
+                    aruba_md_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
+                elif "MM" and "MD" in line_split[0].upper():
+                    aruba_md_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
+                    aruba_mm_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
 
     results = ""
     for mm in aruba_mm:
