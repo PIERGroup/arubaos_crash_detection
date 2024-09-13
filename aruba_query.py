@@ -68,6 +68,18 @@ class ArubaQuery:
             logindata["_global_result"]["X-CSRF-Token"],
         )
         inventory.api[wc] = tmp_token
+    
+    def logout_aruba_api_token(self, wc, inventory):
+        uid = inventory.api[wc].uid
+        cookie = dict(SESSION=uid)
+        response = requests.get(
+            url="https://" + wc + ":4343/v1/api/logout?UIDARUBA=" + uid,
+            data="",
+            headers={},
+            cookies=cookie,
+            verify=False,
+        )
+        return response.json()
 
     def aruba_show_command(self, wc, command, inventory):
         # generic show commands api query
