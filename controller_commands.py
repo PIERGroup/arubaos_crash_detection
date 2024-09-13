@@ -61,13 +61,13 @@ def main():
     results = ""
     for mm in aruba_mm:
         temp_results = query.aruba_ssh_command(mm, aruba_mm_commands)
-        results += aruba_mm[mm] + "\n"
+        results += aruba_mm[mm] + " " + mm + "\n"
         results += temp_results
         results += "\n"
     
     for md in aruba_md:
         temp_results = query.aruba_ssh_command(md, aruba_md_commands)
-        results += aruba_md[md] + "\n"
+        results += aruba_md[md] + " " + md + "\n"
         results += temp_results
         results += "\n"
         

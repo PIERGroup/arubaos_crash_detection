@@ -152,11 +152,10 @@ class ArubaQuery:
                 try:
                     temp_result = temp_output.splitlines()
                     column = int(command["column"])-1
+                    results += command["command_name"]
+                    results += "\n"
                     for line in temp_result:
-                        if line == command["command_name"]:
-                            results += line
-                            results += "\n"
-                        elif command["math_compare"] == "gt":
+                        if command["math_compare"] == "gt":
                             if float(self.remove_non_numeric(line.split()[column])) > float(command["integer"]):
                                 results += line
                                 results += "\n"
@@ -182,11 +181,9 @@ class ArubaQuery:
                     results += "\n"
             else:
                 results += "\n"
-                temp_results = ""
-                for line in temp_output.splitlines():
-                    temp_results += line
-                results += temp_results
+                results += temp_output
                 results += "\n"
+            results += "\n"
 
         ch.disconnect()
         return results
