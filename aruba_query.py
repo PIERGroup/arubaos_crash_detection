@@ -200,6 +200,7 @@ class ArubaQuery:
                         results += "\n"
             results += "\n"
             time.sleep(1)
+        ch.send_command("exit")
         ch.cleanup()
         ch.disconnect()
         return results
