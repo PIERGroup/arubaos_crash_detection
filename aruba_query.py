@@ -183,12 +183,16 @@ class ArubaQuery:
                     results += "\n"
             else:
                 results += "\n"
+                results += command["command_name"]
+                results += "\n"
                 for line in temp_output.splitlines():
                     if line.startswith("#"):
                         pass
-                    results += line
-                    results += "\n"
-                results += "\n"
+                    elif line.startswith("("):
+                        pass
+                    else:
+                        results += line
+                        results += "\n"
             results += "\n"
 
         ch.disconnect()
