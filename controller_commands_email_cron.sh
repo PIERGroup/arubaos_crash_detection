@@ -7,7 +7,7 @@ EMAIL="test@email.com"
 python3 ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands.py > ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands_output
 
 
-if [ -s ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_crash_output ]; then
+if [ -s ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands_output ]; then
         # The file is not-empty.
         mail -s "Aruba Controller Commands" ${EMAIL} < ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands_output
         rm ${PATH_TO_ARUBAOS_CRASH_DETECTION}/controller_commands_output
