@@ -169,6 +169,10 @@ class ArubaQuery:
                             if float(self.remove_non_numeric(line.split()[column])) == float(command["integer"]):
                                 results += line
                                 results += "\n"
+                        elif command["math_compare"] == "neq":
+                            if float(self.remove_non_numeric(line.split()[column])) != float(command["integer"]):
+                                results += line
+                                results += "\n"
                         elif command["math_compare"] == "gte":
                             if float(self.remove_non_numeric(line.split()[column])) >= float(command["integer"]):
                                 results += line

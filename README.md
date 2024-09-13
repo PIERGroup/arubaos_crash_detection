@@ -40,8 +40,8 @@ Format for the controller_command_list is
 column delimeter is ;
 1st field: MM, MD, or MM/MD - run on the MM, MD, or Both
 2nd field: command to run
-3rd field: Can be blank or only display if "col:column (space delimeted) number,math compare:number to compare to"
-math compares for 3rd field: gt, lt, gte, lte, equal, notequal
+3rd field: Can be blank or only display if "col:column number (space delimeted),math compare:number to compare to"
+math compares for 3rd field: gt, lt, gte, lte, eq, neq
 
 Examples:
 MM/MD;show process monitor statistics | include mswitch | exclude PROCESS_RUNNING;""
