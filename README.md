@@ -30,10 +30,10 @@ This tool will search through the crash files for crashes that happened today or
 ### controller_crash
 This tool will look for controller crashes and report on them
 
-### crash_email_cron.sh
-This is a sample cron job that can be used to email out the results of the tool
+### cron scripts
+Sample cron jobs that can be used to email out the results of the tools
 
-### controller_commands.py
+### controller_commands
 This will run the commands listed in controller_command_list 
 Format for the controller_command_list is 
 
