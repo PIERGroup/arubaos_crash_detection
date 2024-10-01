@@ -158,59 +158,57 @@ class ArubaQuery:
 
         # Run each command in the list and return the results
         ch = ConnectHandler(**conn)
-        results = ""
+        main_results = ""
         for command in commands:
+            temp_results = ""
             temp_output = ch.send_command_timing(command["command_name"], strip_prompt=True, strip_command=True)
             if command["column"] != "":
                 try:
                     temp_result = temp_output.splitlines()
                     column = int(command["column"])-1
-                    results += command["command_name"]
-                    results += "\n"
                     for line in temp_result:
                         if line.startswith("#") or command["command_name"] in line:
                             continue
                         elif command["math_compare"] == "gt":
                             if float(self.remove_non_numeric(line.split()[column])) > float(command["integer"]):
-                                results += line
-                                results += "\n"
+                                temp_results += line
+                                temp_results += "\n"
                         elif command["math_compare"] == "lt":
                             if float(self.remove_non_numeric(line.split()[column])) < float(command["integer"]):
-                                results += line
-                                results += "\n"
+                                temp_results += line
+                                temp_results += "\n"
                         elif command["math_compare"] == "eq":
                             if float(self.remove_non_numeric(line.split()[column])) == float(command["integer"]):
-                                results += line
-                                results += "\n"
+                                temp_results += line
+                                temp_results += "\n"
                         elif command["math_compare"] == "neq":
                             if float(self.remove_non_numeric(line.split()[column])) != float(command["integer"]):
-                                results += line
-                                results += "\n"
+                                temp_results += line
+                                temp_results += "\n"
                         elif command["math_compare"] == "gte":
                             if float(self.remove_non_numeric(line.split()[column])) >= float(command["integer"]):
-                                results += line
-                                results += "\n"
+                                temp_results += line
+                                temp_results += "\n"
                         elif command["math_compare"] == "lte":
                             if float(self.remove_non_numeric(line.split()[column])) <= float(command["integer"]):
-                                results += line
-                                results += "\n"
+                                temp_results += line
+                                temp_results += "\n"
                 except Exception as e:
-                    results += "\n" + f"Error processing command {command['command_name']}"
-                    results += "\n" + f"Error: Column {str(int(column)+1)} - {e}"
-                    results += "\n"
+                    temp_results += "\n" + f"Error processing command {command['command_name']}"
+                    temp_results += "\n" + f"Error: Column {str(int(column)+1)} - {e}"
+                    temp_results += "\n"
             else:
-                results += "\n"
-                results += command["command_name"]
-                results += "\n"
                 for line in temp_output.splitlines():
                     if line.startswith("#"):
                         continue
                     elif line.startswith("("):
                         continue
                     else:
-                        results += line
-                        results += "\n"
-            results += "\n"
+                        temp_results += line
+                        temp_results += "\n"
+            if temp_results != "":
+                main_results += f"\n{command['command_name']}\n"
+                main_results += temp_results
         ch.cleanup()
         ch.disconnect()
-        return results
+        return main_results
