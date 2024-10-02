@@ -78,7 +78,8 @@ def main():
             results += temp_results
             results += "\n"
         
-    print(results)
+    if results != "":
+        print(results)    
 
     
     
