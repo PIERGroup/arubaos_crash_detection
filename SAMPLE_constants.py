@@ -10,7 +10,12 @@ Description: Standard variables to use in the scripts in this directory
 # username and password to aruba infrastructure, should be network operator permissions at a minimum
 USERNAME = "USERNAME"
 PASSWORD = "PASSWORD"
+
+#This is to the directory that holds the files
 PATH_TO_AP_CRASH_FILES = "/path/to/ap/crash/files"
+
+#This is to the directory that holds the controller_command_list file
+PATH_TO_CONTROLLER_COMMANDS = "/path/to/controller_command_list"
 
 # this is the list of aruba conductors, only list the primary conductor(s)
 ARUBA_MM = ["192.168.0.5", "192.168.0.15", "192.168.0.25"]

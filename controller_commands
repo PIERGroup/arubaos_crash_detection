@@ -40,7 +40,7 @@ def main():
     
 
     # get the list of commands from controller_command_list
-    with open("controller_command_list", "r") as f:
+    with open(f"{PATH_TO_CONTROLLER_COMMANDS}/controller_command_list", "r") as f:
         lines = f.readlines()
         for line in lines:
             if line.startswith("#"):
