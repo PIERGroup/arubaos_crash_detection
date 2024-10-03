@@ -45,7 +45,8 @@ KNOWN_CRASHES_BACKUP = {
 "PC : 0x4b38a910":"AOS-254766 (bug fix was in 8.10.0.13)",
 "cmnos_thread.c:3861":"AOS-254765",
 'dog_hb.c:210 DOG_HB detects starvation of task "WLAN_HIF"':"AOS-254932",
-
+"ar_wal_rx_uplink.c:1782":"AOS-259230",
+"whal_sring.c:1403":"AOS-259231",
 }
 
 
