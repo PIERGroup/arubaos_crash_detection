@@ -132,7 +132,7 @@ def main():
             if aps_with_crashes[ap]["ap_name"] in inventory.aps.keys():
                 found = False
                 # we look at the crash file instead of via API because there is inconsistent output format from the API depending on AP model
-                with open(f"{PATH_TO_AP_CRASH_FILES}/{aps_with_crashes[ap]['crash_file']}","r") as ap_crash_file:
+                with open(f"{PATH_TO_AP_CRASH_FILES}/{aps_with_crashes[ap]['crash_file']}","r",errors='ignore') as ap_crash_file:
                     ap_crash_info = ap_crash_file.readlines()
                     
                     ap_reboot_reason = query.aruba_show_ap_crash_info_reboot_reason(

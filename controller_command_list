@@ -1,0 +1,4 @@
+MM/MD;show process monitor statistics | include mswitch | exclude PROCESS_RUNNING;
+MD;show datapath utilization | include SPGW,SP,FPGW,DPI,FP | exclude Path;col:9,gte:00
+MD;show cpuload | include idle;col:6,lte:100
+MD;show datapath bwm type 0 | include "0     ";col:6,gte:0

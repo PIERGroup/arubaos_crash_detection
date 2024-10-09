@@ -11,6 +11,8 @@ import requests
 from dataclasses import dataclass, field
 from netmiko import ConnectHandler
 from constants import *
+import re
+import time
 
 
 # This is a class to store the ap data from the controllers.  This makes it easier to add more data later as we are asked for more data
@@ -66,6 +68,18 @@ class ArubaQuery:
             logindata["_global_result"]["X-CSRF-Token"],
         )
         inventory.api[wc] = tmp_token
+    
+    def logout_aruba_api_token(self, wc, inventory):
+        uid = inventory.api[wc].uid
+        cookie = dict(SESSION=uid)
+        response = requests.get(
+            url="https://" + wc + ":4343/v1/api/logout?UIDARUBA=" + uid,
+            data="",
+            headers={},
+            cookies=cookie,
+            verify=False,
+        )
+        return response.json()
 
     def aruba_show_command(self, wc, command, inventory):
         # generic show commands api query
@@ -127,3 +141,74 @@ class ArubaQuery:
                 return line
         ch.disconnect()
         return None
+    
+
+    def remove_non_numeric(self, string):
+        return string.replace(",", "").replace("%","")
+        # return re.sub(r'\D', '', string)
+    
+    def aruba_ssh_command(self, mc, commands):
+        conn = {
+            "device_type": "aruba_os_ssh",
+            "host": mc,
+            "username": USERNAME,
+            "password": PASSWORD,
+            "banner_timeout": 10,
+        }
+
+        # Run each command in the list and return the results
+        ch = ConnectHandler(**conn)
+        main_results = ""
+        for command in commands:
+            temp_results = ""
+            temp_output = ch.send_command_timing(command["command_name"], strip_prompt=True, strip_command=True)
+            if command["column"] != "":
+                try:
+                    temp_result = temp_output.splitlines()
+                    column = int(command["column"])-1
+                    for line in temp_result:
+                        if line.startswith("#") or command["command_name"] in line:
+                            continue
+                        elif command["math_compare"] == "gt":
+                            if float(self.remove_non_numeric(line.split()[column])) > float(command["integer"]):
+                                temp_results += line
+                                temp_results += "\n"
+                        elif command["math_compare"] == "lt":
+                            if float(self.remove_non_numeric(line.split()[column])) < float(command["integer"]):
+                                temp_results += line
+                                temp_results += "\n"
+                        elif command["math_compare"] == "eq":
+                            if float(self.remove_non_numeric(line.split()[column])) == float(command["integer"]):
+                                temp_results += line
+                                temp_results += "\n"
+                        elif command["math_compare"] == "neq":
+                            if float(self.remove_non_numeric(line.split()[column])) != float(command["integer"]):
+                                temp_results += line
+                                temp_results += "\n"
+                        elif command["math_compare"] == "gte":
+                            if float(self.remove_non_numeric(line.split()[column])) >= float(command["integer"]):
+                                temp_results += line
+                                temp_results += "\n"
+                        elif command["math_compare"] == "lte":
+                            if float(self.remove_non_numeric(line.split()[column])) <= float(command["integer"]):
+                                temp_results += line
+                                temp_results += "\n"
+                except Exception as e:
+                    temp_results += "\n" + f"Error processing command {command['command_name']}"
+                    temp_results += "\n" + f"Error: Column {str(int(column)+1)} - {e}"
+                    temp_results += "\n"
+            else:
+                for line in temp_output.splitlines():
+                    if line.startswith("#"):
+                        continue
+                    elif line.startswith("("):
+                        continue
+                    else:
+                        temp_results += line
+                        temp_results += "\n"
+            if temp_results != "":
+                main_results += f"\n{command['command_name']}\n"
+                main_results += temp_results
+        ch.cleanup()
+        ch.disconnect()
+        return main_results
