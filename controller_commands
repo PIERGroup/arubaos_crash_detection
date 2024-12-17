@@ -64,19 +64,18 @@ def main():
                     aruba_mm_commands.append({"command_name": line_split[1], "column": column, "math_compare": math_compare, "integer": integer})
 
     results = ""
-    for mm in aruba_mm:
-        temp_results = query.aruba_ssh_command(mm, aruba_mm_commands)
-        if temp_results != "":
-            results += aruba_mm[mm] + " " + mm + "\n"
-            results += temp_results
-            results += "\n"
-    
-    for md in aruba_md:
-        temp_results = query.aruba_ssh_command(md, aruba_md_commands)
-        if temp_results != "":
-            results += aruba_md[md] + " " + md + "\n"
-            results += temp_results
-            results += "\n"
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        temp_results = {executor.submit(query.aruba_ssh_command, mm, aruba_mm_commands, aruba_mm[mm]): mm for mm in aruba_mm}
+        for future in concurrent.futures.as_completed(temp_results):
+            if future.result() != "":
+                results += future.result()
+   
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        temp_results = {executor.submit(query.aruba_ssh_command, md, aruba_md_commands, aruba_md[md]): md for md in aruba_md}
+        for future in concurrent.futures.as_completed(temp_results):
+            if future.result() != "":
+                results += future.result()
         
     if results != "":
         print(results)    
