@@ -147,7 +147,7 @@ class ArubaQuery:
         return string.replace(",", "").replace("%","")
         # return re.sub(r'\D', '', string)
     
-    def aruba_ssh_command(self, mc, commands):
+    def aruba_ssh_command(self, mc, commands, mc_name):
         conn = {
             "device_type": "aruba_os_ssh",
             "host": mc,
@@ -207,6 +207,7 @@ class ArubaQuery:
                         temp_results += line
                         temp_results += "\n"
             if temp_results != "":
+                main_results += mc_name + " " + mc + "\n"
                 main_results += f"\n{command['command_name']}\n"
                 main_results += temp_results
         ch.cleanup()
