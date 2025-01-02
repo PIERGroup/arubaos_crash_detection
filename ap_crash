@@ -141,7 +141,7 @@ def main():
                     for line in ap_crash_info:
                         # if the signature is in the known crash dictionary tell us
                         for signature in known_crashes.keys():
-                            if signature in line:
+                            if signature in line and not found:
                                 print(
                                     f"""AP name: {aps_with_crashes[ap]["ap_name"]}   AP type: {inventory.aps[aps_with_crashes[ap]["ap_name"]].model}   AP SN#: {inventory.aps[aps_with_crashes[ap]["ap_name"]].serial}   AOS Version: {aruba_md[inventory.aps[aps_with_crashes[ap]["ap_name"]].primary]}
     AP AAC IP: {inventory.aps[aps_with_crashes[ap]["ap_name"]].primary}   AP Crash Time: {aps_with_crashes[ap]['date']}
